@@ -1,5 +1,5 @@
 {
-  "domain": "hass_mikrotik",
+  "domain": "mikrotik_address_list",
   "name": "MikroTik Address List",
   "documentation": "https://github.com/dtsd/hass_mikrotik",
   "issue_tracker": "https://github.com/dtsd/hass_mikrotik/issues",
