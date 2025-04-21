@@ -41,8 +41,7 @@ STEP_FILTER_DATA_SCHEMA = vol.Schema(
     }
 )
 
-@config_entries.HANDLERS.register(DOMAIN)
-class ConfigFlow(config_entries.ConfigFlow):
+class ConfigFlow(config_entries.ConfigFlow, domain = DOMAIN):
     """Handle a config flow for MikroTik Address Lists."""
 
     VERSION = 1
