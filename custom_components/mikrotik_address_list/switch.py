@@ -16,6 +16,12 @@ from .const import CONF_ADDRESS_LISTS, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+def api_select_where(api, id_):
+    return api.select(Key('.id'), Key('disabled')).where(Key('.id') == id_)
+
+def api_update(api, id_, disabled):
+    return api.update(**{'.id' : id_, 'disabled' : disabled})
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -57,11 +63,7 @@ class MikroTikAddressListSwitch(SwitchEntity):
         """Turn the switch on."""
         try:
             await self.hass.async_add_executor_job(
-                self._address_list_api.update,
-                **{
-                    ".id": self._address_list_item[".id"],
-                    "disabled": False,
-                },
+                api_update, self._address_list_api, self._address_list_item[".id"], False
             )
             self._attr_is_on = True
             self.async_write_ha_state()
@@ -72,11 +74,7 @@ class MikroTikAddressListSwitch(SwitchEntity):
         """Turn the switch off."""
         try:
             await self.hass.async_add_executor_job(
-                self._address_list_api.update,
-                **{
-                    ".id": self._address_list_item[".id"],
-                    "disabled": True,
-                },
+                api_update, self._address_list_api, self._address_list_item[".id"], True
             )
             self._attr_is_on = False
             self.async_write_ha_state()
@@ -86,14 +84,12 @@ class MikroTikAddressListSwitch(SwitchEntity):
     async def async_update(self) -> None:
         """Update the switch state."""
         try:
-            def api_select_where(api, id_):
-                return api.select(Key('.id'), Key('disabled')).where(Key('.id') == id_)
-
             items = await self.hass.async_add_executor_job(
                 api_select_where, self._address_list_api, self._address_list_item[".id"]
             )
-            items = list(items)
-            self._attr_is_on = not items[0]['disabled'] if items else False
+            for item in items:
+                self._attr_is_on = not item['disabled']
+
         except LibRouterosError as ex:
             _LOGGER.error("Error updating address list item: %s", ex)
 
