@@ -46,7 +46,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain = DOMAIN):
     """Handle a config flow for MikroTik Address Lists."""
 
     VERSION = 1
-    _address_lists: dict[str, str] = {}
+
+    def __init__(self):
+        """Initialize the flow."""
+        self._host = None
+        self._user_input = None
+        self._address_lists = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -65,6 +70,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain = DOMAIN):
                 api = await self.hass.async_add_executor_job(connect_func)
 
                 # Get available address lists
+                self._host = user_input[CONF_HOST]
+                self._user_input = user_input
                 self._address_lists = {
                     item["list"]: item["list"]
                     for item in await self.hass.async_add_executor_job(
@@ -96,22 +103,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain = DOMAIN):
         if user_input is None:
             return self.async_show_form(
                 step_id="filter",
-                data_schema=vol.Schema(
-                    {
-                        vol.Optional(CONF_ADDRESS_LISTS): cv.multi_select(
-                            self._address_lists
-                        ),
-                    }
-                ),
+                data_schema=vol.Schema({
+                    vol.Optional(CONF_ADDRESS_LISTS): cv.multi_select(
+                        self._address_lists
+                    ),
+                }),
             )
-
+        
         return self.async_create_entry(
-            title=user_input[CONF_HOST],
+            title=self._host,
             data={
-                CONF_HOST: user_input[CONF_HOST],
-                CONF_USERNAME: user_input[CONF_USERNAME],
-                CONF_PASSWORD: user_input[CONF_PASSWORD],
-                CONF_PORT: user_input[CONF_PORT],
-                CONF_ADDRESS_LISTS: user_input.get(CONF_ADDRESS_LISTS, []),
-            },
+                **self._user_input,
+                CONF_ADDRESS_LISTS: user_input.get(CONF_ADDRESS_LISTS, [])
+            }
         )
