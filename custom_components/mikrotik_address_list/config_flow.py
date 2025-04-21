@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from functools import partial
 
 import voluptuous as vol
 from librouteros import connect
@@ -55,13 +56,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain = DOMAIN):
 
         if user_input is not None:
             try:
-                api = await self.hass.async_add_executor_job(
-                    connect,
-                    user_input[CONF_HOST],
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_PASSWORD],
-                    port=user_input[CONF_PORT],
-                )
+                connect_func = partial(connect,
+                    host = user_input[CONF_HOST],
+                    username = user_input[CONF_USERNAME],
+                    password = user_input[CONF_PASSWORD],
+                    port=user_input[CONF_PORT]
+                    )
+                api = await self.hass.async_add_executor_job(connect_func)
 
                 # Get available address lists
                 self._address_lists = {
