@@ -35,7 +35,7 @@ async def async_setup_entry(
 
     try:
         address_list_items = await hass.async_add_executor_job(
-            address_list_api.select, Key('.id'), Key('list'), Key('address')
+            address_list_api.select, Key('.id'), Key('list'), Key('address'), Key('comment')
         )
 
         entities = []
@@ -55,7 +55,8 @@ class MikroTikAddressListSwitch(SwitchEntity):
         """Initialize the switch."""
         self._address_list_api = address_list_api
         self._address_list_item = address_list_item
-        self._attr_name = f"{address_list_item['list']} - {address_list_item['address']}"
+        name = address_list_item['comment'] if 'comment' in address_list_item else address_list_item['address']
+        self._attr_name = f"{address_list_item['list']} - {name}"
         self._attr_unique_id = f"{address_list_item['.id']}"
         self._attr_is_on = False
 
