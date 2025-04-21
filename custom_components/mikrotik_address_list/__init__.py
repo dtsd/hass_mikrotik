@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from functools import partial
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -26,13 +27,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     try:
-        api = await hass.async_add_executor_job(
-            connect,
-            entry.data[CONF_HOST],
-            entry.data[CONF_USERNAME],
-            entry.data[CONF_PASSWORD],
-            port=entry.data[CONF_PORT],
-        )
+        connect_func = partial(connect,
+            host = entry.data[CONF_HOST],
+            username = entry.data[CONF_USERNAME],
+            password = entry.data[CONF_PASSWORD],
+            port=entry.data[CONF_PORT]
+            )
+        api = await hass.async_add_executor_job(connect_func)
     except LibRouterosError as ex:
         _LOGGER.error("Error connecting to MikroTik: %s", ex)
         return False
