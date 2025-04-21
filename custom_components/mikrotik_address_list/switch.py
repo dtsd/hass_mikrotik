@@ -9,8 +9,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from librouteros.exceptions import ApiError
-from librouteros.query import ApiKey
+from librouteros.exceptions import LibRouterosError
+from librouteros.query import Key
 
 from .const import CONF_ADDRESS_LISTS, DOMAIN
 
@@ -39,7 +39,7 @@ async def async_setup_entry(
             entities.append(MikroTikAddressListSwitch(address_list_api, item))
 
         async_add_entities(entities, True)
-    except ApiError as ex:
+    except LibRouterosError as ex:
         _LOGGER.error("Error fetching address lists: %s", ex)
 
 class MikroTikAddressListSwitch(SwitchEntity):
@@ -65,7 +65,7 @@ class MikroTikAddressListSwitch(SwitchEntity):
             )
             self._attr_is_on = True
             self.async_write_ha_state()
-        except ApiError as ex:
+        except LibRouterosError as ex:
             _LOGGER.error("Error enabling address list item: %s", ex)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
@@ -80,19 +80,19 @@ class MikroTikAddressListSwitch(SwitchEntity):
             )
             self._attr_is_on = False
             self.async_write_ha_state()
-        except ApiError as ex:
+        except LibRouterosError as ex:
             _LOGGER.error("Error disabling address list item: %s", ex)
 
     async def async_update(self) -> None:
         """Update the switch state."""
         try:
             def api_select_where(api, id_):
-                return api.select().where(ApiKey('.id') == id_)
+                return api.select().where(Key('.id') == id_)
 
             items = await self.hass.async_add_executor_job(
                 api_select_where, self._address_list_api, self._address_list_item[".id"]
             )
             self._attr_is_on = not items[0]['disabled'] if items else False
-        except ApiError as ex:
+        except LibRouterosError as ex:
             _LOGGER.error("Error updating address list item: %s", ex)
 
