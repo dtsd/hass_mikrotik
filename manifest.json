@@ -1,11 +1,11 @@
 {
   "domain": "hass_mikrotik",
-  "name": "MikroTik Address Lists",
+  "name": "MikroTik Address List",
   "documentation": "https://github.com/dtsd/hass_mikrotik",
   "issue_tracker": "https://github.com/dtsd/hass_mikrotik/issues",
   "dependencies": [],
   "codeowners": ["@dtsd"],
-  "requirements": ["librouteros==3.2.0"],
+  "requirements": ["librouteros==3.2.0", "voluptuous"],
   "version": "1.0.0",
   "iot_class": "local_polling"
 }
