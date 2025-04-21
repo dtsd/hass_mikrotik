@@ -92,6 +92,7 @@ class MikroTikAddressListSwitch(SwitchEntity):
             items = await self.hass.async_add_executor_job(
                 api_select_where, self._address_list_api, self._address_list_item[".id"]
             )
+            items = list(items)
             self._attr_is_on = not items[0]['disabled'] if items else False
         except LibRouterosError as ex:
             _LOGGER.error("Error updating address list item: %s", ex)
