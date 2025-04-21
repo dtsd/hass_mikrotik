@@ -86,10 +86,7 @@ class MikroTikAddressListSwitch(SwitchEntity):
         try:
             items = await self.hass.async_add_executor_job(
                 self._api,
-                "/ip/firewall/address-list/print",
-                **{
-                    "?.id": self._address_list_item[".id"],
-                },
+                "/ip/firewall/address-list/print"
             )
             self._attr_is_on = bool(items)
         except LibRouterosError as ex:
